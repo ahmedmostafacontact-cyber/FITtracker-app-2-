@@ -129,5 +129,13 @@ export default {
   "workoutComplete": "أحسنت! اكتمل التمرين",
   "durationLabel": "المدة",
   "volume": "الحجم التدريبي",
-  "completedSets": "المجموعات المكتملة"
+  "completedSets": "المجموعات المكتملة",
+  "restTimer": "مؤقت الراحة",
+  "restFinished": "انتهت الراحة",
+  "nextSet": "جاهز للمجموعة التالية؟",
+  "minus15": "−15ث",
+  "plus15": "＋15ث",
+  "skipRest": "تخطي",
+  "timerError": "تعذر تعديل مؤقت الراحة. حاول مجدداً.",
+  "notificationsUnavailable": "المؤقت يعمل. لتنبيهات الخلفية، اسمح بالإشعارات من إعدادات أندرويد."
 };

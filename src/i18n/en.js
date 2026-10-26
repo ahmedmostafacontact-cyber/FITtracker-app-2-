@@ -129,5 +129,13 @@ export default {
   "workoutComplete": "Workout complete!",
   "durationLabel": "Duration",
   "volume": "Volume",
-  "completedSets": "Completed sets"
+  "completedSets": "Completed sets",
+  "restTimer": "Rest timer",
+  "restFinished": "Rest complete",
+  "nextSet": "Ready for your next set?",
+  "minus15": "−15s",
+  "plus15": "＋15s",
+  "skipRest": "Skip",
+  "timerError": "Couldn't update the rest timer. Please retry.",
+  "notificationsUnavailable": "Timer is running. Background alerts need notification permission in Android settings."
 };
