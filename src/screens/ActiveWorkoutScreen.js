@@ -7,6 +7,7 @@ import Sheet from '../components/Sheet';
 import YouTubeEmbed from '../components/YouTubeEmbed';
 import {useTheme} from '../theme/ThemeProvider';
 import {useData} from '../store/dataStore';
+import {templateDiffers,templateFromWorkout,getTemplate} from '../db/queries/templates';
 import * as Q from '../db/queries/workouts';
 import {activateKeepAwakeAsync,deactivateKeepAwake} from 'expo-keep-awake';
 import {startRest,stopRest} from '../services/notificationService';
@@ -20,7 +21,7 @@ export default function ActiveWorkoutScreen({navigation,route}){
  if(!workout)return <Page><Label>{t('noWorkout')}</Label></Page>;
  const editable=!workout.is_completed;
  function safe(fn){try{return fn();}catch{Alert.alert(t('error'),t('invalidSet'));}}
- function finish(){Alert.alert(t('finishWorkout'),t('finishConfirm'),[{text:t('cancel'),style:'cancel'},{text:t('finishWorkout'),onPress:()=>safe(()=>{Q.finishWorkout(workout.id);stopRest().catch(()=>{});navigation.replace('WorkoutSummary',{id:workout.id});})}]);}
+ function finish(){Alert.alert(t('finishWorkout'),t('finishConfirm'),[{text:t('cancel'),style:'cancel'},{text:t('finishWorkout'),onPress:()=>safe(()=>{Q.finishWorkout(workout.id);stopRest().catch(()=>{});const finished=Q.getWorkout(workout.id);const go=()=>navigation.replace('WorkoutSummary',{id:workout.id});if(templateDiffers(finished))Alert.alert(t('updateTemplate'),t('updateTemplateConfirm'),[{text:t('keepTemplate'),onPress:go},{text:t('update'),onPress:()=>{safe(()=>templateFromWorkout(workout.id,getTemplate(workout.template_id).name,workout.template_id));go();}}],{cancelable:false});else go();})}]);}
  function cancel(){Alert.alert(t('cancelWorkout'),t('cancelWorkoutConfirm'),[{text:t('cancel'),style:'cancel'},{text:t('delete'),style:'destructive',onPress:()=>safe(()=>{Q.deleteWorkout(workout.id);stopRest().catch(()=>{});navigation.goBack();})}]);}
  return <View style={{flex:1,backgroundColor:c.background}}><Page><Label muted>{formatDuration(((workout.end_time||now)-workout.start_time)/1000)}</Label><Input label={t('workoutName')} value={workout.name||''} onChangeText={name=>safe(()=>Q.updateWorkout(workout.id,{name}))}/>
  {workout.exercises.map((e,index)=><Card key={e.id}><View style={{flexDirection:'row',alignItems:'center',gap:16}}><ExerciseImage exercise={e}/><View style={{flex:1}}><Label style={{fontWeight:'700'}}>{settings.language==='ar'?(e.name_ar||e.name):e.name}</Label><Label muted>{t(e.tracking_type)}</Label></View>{e.youtube_id&&<Button secondary title={t('playVideo')} onPress={()=>setVideo(e)}/>}</View>
