@@ -1,0 +1,1 @@
+export default { app:'FitLog',workout:'التمرين',history:'السجل',exercises:'التمارين',stats:'الإحصائيات',settings:'الإعدادات',welcome:'رقمك الشخصي القادم يبدأ هنا',intro:'أقوى قليلاً، في كل تمرين.',empty:'رحلتك تبدأ هنا',emptyBody:'ستظهر بيانات تمارينك هنا.',dark:'الوضع الداكن',language:'English',light:'الوضع الفاتح',restart:'أعد تشغيل التطبيق لتطبيق اتجاه النص',ok:'حسناً' };

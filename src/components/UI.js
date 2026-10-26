@@ -1,0 +1,9 @@
+import React from 'react';
+import {Text,Pressable,View,TextInput,ScrollView} from 'react-native';
+import {useTheme} from '../theme/ThemeProvider';
+import {spacing,radii} from '../theme/tokens';
+export function Label({children,muted,style,...props}) { const {c,settings}=useTheme();return <Text {...props} style={[{color:muted?c.textMuted:c.text,fontSize:16,fontFamily:settings.language==='ar'?'Cairo_400Regular':'Inter_400Regular',textAlign:settings.language==='ar'?'right':'left'},style]}>{children}</Text>; }
+export function Button({title,onPress,secondary,disabled}) {const {c}=useTheme();return <Pressable accessibilityRole="button" disabled={disabled} onPress={onPress} style={{minHeight:48,padding:spacing.md,borderRadius:radii.control,backgroundColor:secondary?c.surfaceAlt:c.primary,opacity:disabled?0.4:1,justifyContent:'center',marginVertical:spacing.xs}}><Label style={{textAlign:'center',fontWeight:'700',color:secondary?c.text:c.background}}>{title}</Label></Pressable>;}
+export function Card({children}) {const {c}=useTheme();return <View style={{padding:spacing.md,backgroundColor:c.surface,borderRadius:radii.card,gap:spacing.sm,marginVertical:spacing.sm}}>{children}</View>;}
+export function Page({children}) {const {c}=useTheme();return <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{padding:spacing.md,paddingBottom:spacing.xl,gap:spacing.sm,flexGrow:1}} style={{backgroundColor:c.background}}>{children}</ScrollView>;}
+export function Input({label,...props}) {const {c,settings}=useTheme();return <View><Label muted>{label}</Label><TextInput {...props} placeholderTextColor={c.textMuted} style={{minHeight:48,padding:spacing.sm,borderRadius:radii.control,backgroundColor:c.surfaceAlt,color:c.text,textAlign:settings.language==='ar'?'right':'left'}}/></View>;}
