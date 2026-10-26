@@ -11,7 +11,7 @@ export default function ExercisesScreen({navigation,route}){
  const [search,setSearch]=useState(''),[muscle,setMuscle]=useState(''),[gear,setGear]=useState(''),[favorites,setFavorites]=useState(false);
  const rows=listExercises({search,muscle,equipment:gear,favorites});
  return <View style={{flex:1,backgroundColor:c.background,padding:16}}>
- <Input label={t('search')} value={search} onChangeText={setSearch}/>
+ <Button title={t('newExercise')} onPress={()=>navigation.navigate('ExerciseForm')}/><Input label={t('search')} value={search} onChangeText={setSearch}/>
  <ScrollView horizontal style={{flexGrow:0}} contentContainerStyle={{gap:8}}>{['',...muscles].map(m=><Button key={m} secondary={muscle!==m} title={t(m||'all')} onPress={()=>setMuscle(m)}/>)}</ScrollView>
  <ScrollView horizontal style={{flexGrow:0}} contentContainerStyle={{gap:8}}>{['',...equipment].map(e=><Button key={e} secondary={gear!==e} title={t(e||'allEquipment')} onPress={()=>setGear(e)}/>)}</ScrollView>
  <Button secondary={!favorites} title={t('favorites')} onPress={()=>setFavorites(!favorites)}/>

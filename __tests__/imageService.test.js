@@ -1,0 +1,12 @@
+jest.mock('expo-image-picker',()=>({requestCameraPermissionsAsync:jest.fn(),requestMediaLibraryPermissionsAsync:jest.fn(),launchCameraAsync:jest.fn(),launchImageLibraryAsync:jest.fn()}));
+jest.mock('expo-image-manipulator',()=>({manipulateAsync:jest.fn(),SaveFormat:{JPEG:'jpeg'}}));
+jest.mock('expo-file-system/legacy',()=>({documentDirectory:'file:///app/',makeDirectoryAsync:jest.fn(),copyAsync:jest.fn(),deleteAsync:jest.fn()}));
+import * as Picker from 'expo-image-picker';
+import * as FS from 'expo-file-system/legacy';
+import {manipulateAsync} from 'expo-image-manipulator';
+import {pickExerciseImage,deleteExerciseImage} from '../src/services/imageService';
+import {Alert} from 'react-native';
+beforeEach(()=>jest.clearAllMocks());
+test('permission denial does not launch picker or write files',async()=>{jest.spyOn(Alert,'alert').mockImplementation(()=>{});Picker.requestCameraPermissionsAsync.mockResolvedValue({granted:false});expect(await pickExerciseImage('camera',k=>k)).toBeNull();expect(Picker.launchCameraAsync).not.toHaveBeenCalled();expect(FS.copyAsync).not.toHaveBeenCalled();});
+test('gallery photo is cropped, resized and copied to permanent private storage',async()=>{Picker.requestMediaLibraryPermissionsAsync.mockResolvedValue({granted:true});Picker.launchImageLibraryAsync.mockResolvedValue({canceled:false,assets:[{uri:'file:///camera.jpg',width:4000}]});manipulateAsync.mockResolvedValue({uri:'file:///resized.jpg'});const uri=await pickExerciseImage('gallery',k=>k);expect(uri).toMatch(/^file:\/\/\/app\/exercise-images\/.+\.jpg$/);expect(manipulateAsync).toHaveBeenCalledWith('file:///camera.jpg',[{resize:{width:1080}}],{compress:0.8,format:'jpeg'});expect(FS.copyAsync).toHaveBeenCalledWith({from:'file:///resized.jpg',to:uri});});
+test('deletion is idempotent and limited to owned exercise images',async()=>{await deleteExerciseImage('file:///someone-else.jpg');expect(FS.deleteAsync).not.toHaveBeenCalled();await deleteExerciseImage('file:///app/exercise-images/a.jpg');expect(FS.deleteAsync).toHaveBeenCalledWith('file:///app/exercise-images/a.jpg',{idempotent:true});});
