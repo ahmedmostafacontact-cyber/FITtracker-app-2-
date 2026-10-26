@@ -1,5 +1,6 @@
 import {db,mutate} from '../database';
 import {uuid} from '../../utils/uuid';
+import {rebuildRecords} from './stats';
 import {validSet} from '../../utils/calc';
 export const activeWorkout=()=>db().getFirstSync('SELECT * FROM workouts WHERE is_completed=0');
 export const listWorkouts=()=>db().getAllSync('SELECT * FROM workouts WHERE is_completed=1 ORDER BY start_time DESC');
@@ -34,9 +35,10 @@ export function updateSet(id,patch){return mutate(()=>{
  const s=db().getFirstSync('SELECT ws.*, e.tracking_type FROM workout_sets ws JOIN workout_exercises we ON we.id=ws.workout_exercise_id JOIN exercises e ON e.id=we.exercise_id WHERE ws.id=?',id);if(!s)throw new Error('Set missing');
  const next={...s,...patch};if(next.is_completed&&!validSet(next,s.tracking_type)){if(patch.is_completed)throw new Error('Invalid set');keys.push('is_completed');patch={...patch,is_completed:0};}
  if(keys.length)db().runSync('UPDATE workout_sets SET '+keys.map(k=>k+'=?').join(',')+', completed_at=? WHERE id=?',...keys.map(k=>patch[k]),patch.is_completed===1?Date.now():(patch.is_completed===0?null:s.completed_at),id);
+ return rebuildRecords().get(id)||[];
 });}
-export const deleteSet=id=>mutate(()=>{const set=db().getFirstSync('SELECT * FROM workout_sets WHERE id=?',id);db().runSync('DELETE FROM workout_sets WHERE id=?',id);return set;});
-export const restoreSet=set=>mutate(()=>insertSet(set.workout_exercise_id,set));
+export const deleteSet=id=>mutate(()=>{const set=db().getFirstSync('SELECT * FROM workout_sets WHERE id=?',id);db().runSync('DELETE FROM workout_sets WHERE id=?',id);rebuildRecords();return set;});
+export const restoreSet=set=>mutate(()=>{const id=insertSet(set.workout_exercise_id,set);rebuildRecords();return id;});
 export const updateWorkout=(id,patch)=>mutate(()=>{
  const keys=['name','notes','start_time'].filter(k=>patch[k]!==undefined);
  if(keys.length)db().runSync('UPDATE workouts SET '+keys.map(k=>k+'=?').join(',')+' WHERE id=?',...keys.map(k=>patch[k]),id);
@@ -46,7 +48,7 @@ export const updateEntry=(id,patch)=>mutate(()=>{
  if(keys.length)db().runSync('UPDATE workout_exercises SET '+keys.map(k=>k+'=?').join(',')+' WHERE id=?',...keys.map(k=>patch[k]),id);
  if(patch.notes!==undefined)db().runSync('UPDATE exercises SET notes=? WHERE id=(SELECT exercise_id FROM workout_exercises WHERE id=?)',patch.notes,id);
 });
-export const removeEntry=id=>mutate(()=>db().runSync('DELETE FROM workout_exercises WHERE id=?',id));
+export const removeEntry=id=>mutate(()=>{db().runSync('DELETE FROM workout_exercises WHERE id=?',id);rebuildRecords();});
 export function moveEntry(id,offset){return mutate(()=>{
  const entry=db().getFirstSync('SELECT * FROM workout_exercises WHERE id=?',id);
  const rows=db().getAllSync('SELECT id FROM workout_exercises WHERE workout_id=? ORDER BY order_index',entry.workout_id);
@@ -60,6 +62,6 @@ export function finishWorkout(id){return mutate(()=>{
  if(!workout||workout.is_completed)throw new Error('Workout missing');
  if(!workout.exercises.some(e=>e.sets.some(s=>s.is_completed)))throw new Error('No completed sets');
  db().runSync('DELETE FROM workout_exercises WHERE workout_id=? AND NOT EXISTS (SELECT 1 FROM workout_sets s WHERE s.workout_exercise_id=workout_exercises.id AND s.is_completed=1)',id);
- db().runSync('UPDATE workouts SET is_completed=1,end_time=? WHERE id=?',Math.max(Date.now(),workout.start_time),id);return id;
+ db().runSync('UPDATE workouts SET is_completed=1,end_time=? WHERE id=?',Math.max(Date.now(),workout.start_time),id);rebuildRecords();return id;
 });}
-export const deleteWorkout=id=>mutate(()=>{db().runSync('DELETE FROM personal_records WHERE workout_id=?',id);db().runSync('DELETE FROM workouts WHERE id=?',id);});
+export const deleteWorkout=id=>mutate(()=>{db().runSync('DELETE FROM personal_records WHERE workout_id=?',id);db().runSync('DELETE FROM workouts WHERE id=?',id);rebuildRecords();});

@@ -16,6 +16,7 @@ export default function ExerciseDetailScreen({navigation,route}){
  <Label style={{fontSize:26,fontWeight:'700'}}>{settings.language==='ar'?(e.name_ar||e.name):e.name}</Label><Label muted>{t(e.primary_muscle)} · {t(e.equipment)} · {t(e.tracking_type)}</Label>
  <Card><Label>{e.instructions||t('noInstructions')}</Label></Card>
  {!!e.youtube_id&&<YouTubeEmbed videoId={e.youtube_id} start={e.youtube_start||0}/>}
+ <Button secondary title={t('exerciseProgress')} onPress={()=>navigation.navigate('ExerciseProgress',{id:e.id})}/>
  <Button title={t('editExercise')} onPress={()=>navigation.navigate('ExerciseForm',{id:e.id})}/>
  {!!e.is_custom&&<Button secondary title={t('delete')} onPress={remove}/>}
  <Modal visible={zoom} onRequestClose={()=>setZoom(false)}><Page><Image source={{uri:e.image_uri}} style={{width:'100%',height:500}} contentFit="contain"/><Button title={t('close')} onPress={()=>setZoom(false)}/></Page></Modal></Page>;

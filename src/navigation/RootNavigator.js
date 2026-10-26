@@ -1,24 +1,23 @@
 import React from 'react';
 import {NavigationContainer,DefaultTheme,DarkTheme} from '@react-navigation/native';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import ExerciseDetailScreen from '../screens/ExerciseDetailScreen';
-import ExerciseFormScreen from '../screens/ExerciseFormScreen';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {Ionicons} from '@expo/vector-icons';
-import {Page,Label,Card,Button} from '../components/UI';
 import {useTheme} from '../theme/ThemeProvider';
-import HistoryScreen from '../screens/HistoryScreen';
-import WorkoutDetailScreen from '../screens/WorkoutDetailScreen';
-import TemplateEditorScreen from '../screens/TemplateEditorScreen';
 import HomeScreen from '../screens/HomeScreen';
+import ExercisesScreen from '../screens/ExercisesScreen';
+import ExerciseFormScreen from '../screens/ExerciseFormScreen';
+import ExerciseDetailScreen from '../screens/ExerciseDetailScreen';
 import ActiveWorkoutScreen from '../screens/ActiveWorkoutScreen';
 import ExercisePickerScreen from '../screens/ExercisePickerScreen';
 import WorkoutSummaryScreen from '../screens/WorkoutSummaryScreen';
-import ExercisesScreen from '../screens/ExercisesScreen';
-const Tabs=createBottomTabNavigator();
-function Placeholder(){const {t,update,dark,settings}=useTheme();return <Page><Label style={{fontSize:30,fontWeight:'800'}}>{t('welcome')}</Label><Label muted>{t('intro')}</Label><Card><Label>{t('empty')}</Label><Label muted>{t('emptyBody')}</Label></Card><Button title={t(dark?'light':'dark')} onPress={()=>update({theme:dark?'light':'dark'})}/><Button secondary title={t('language')} onPress={()=>update({language:settings.language==='ar'?'en':'ar'})}/></Page>;}
-const Stack=createNativeStackNavigator();
-function Library(){const {t}=useTheme();return <Stack.Navigator><Stack.Screen name="ExerciseList" component={ExercisesScreen} options={{title:t('exercises')}}/><Stack.Screen name="ExerciseDetail" component={ExerciseDetailScreen} options={{title:t('detail')}}/><Stack.Screen name="ExerciseForm" component={ExerciseFormScreen} options={{title:t('editExercise')}}/></Stack.Navigator>;}
-function Workouts(){const {t}=useTheme();return <Stack.Navigator><Stack.Screen name="Home" component={HomeScreen} options={{title:t('workout')}}/><Stack.Screen name="TemplateEditor" component={TemplateEditorScreen} options={{title:t('editTemplate')}}/><Stack.Screen name="WorkoutDetail" component={WorkoutDetailScreen} options={{title:t('history')}}/><Stack.Screen name="ActiveWorkout" component={ActiveWorkoutScreen} options={{title:t('activeWorkout')}}/><Stack.Screen name="ExercisePicker" component={ExercisePickerScreen} options={{title:t('addExercises')}}/><Stack.Screen name="WorkoutSummary" component={WorkoutSummaryScreen} options={{title:t('workoutComplete')}}/></Stack.Navigator>;}
-function History(){const {t}=useTheme();return <Stack.Navigator><Stack.Screen name="HistoryList" component={HistoryScreen} options={{title:t('history')}}/><Stack.Screen name="WorkoutDetail" component={WorkoutDetailScreen} options={{title:t('history')}}/><Stack.Screen name="ActiveWorkout" component={ActiveWorkoutScreen} options={{title:t('editWorkout')}}/><Stack.Screen name="ExercisePicker" component={ExercisePickerScreen} options={{title:t('addExercises')}}/></Stack.Navigator>;}
-export default function RootNavigator(){const {c,t,dark}=useTheme();return <NavigationContainer theme={{...(dark?DarkTheme:DefaultTheme),colors:{...(dark?DarkTheme:DefaultTheme).colors,background:c.background,card:c.surface,text:c.text,primary:c.primary}}}><Tabs.Navigator screenOptions={({route})=>({tabBarActiveTintColor:c.primary,tabBarIcon:({color,size})=><Ionicons color={color} size={size} name={{workout:'barbell-outline',history:'calendar-outline',exercises:'fitness-outline',stats:'stats-chart-outline'}[route.name]}/>})}>{['workout','history','exercises','stats'].map(key=><Tabs.Screen key={key} name={key} component={key==='exercises'?Library:key==='workout'?Workouts:key==='history'?History:Placeholder} options={{title:t(key)}}/>)}</Tabs.Navigator></NavigationContainer>;}
+import TemplateEditorScreen from '../screens/TemplateEditorScreen';
+import HistoryScreen from '../screens/HistoryScreen';
+import WorkoutDetailScreen from '../screens/WorkoutDetailScreen';
+import StatsScreen from '../screens/StatsScreen';
+import ExerciseProgressScreen from '../screens/ExerciseProgressScreen';
+const Stack=createNativeStackNavigator(),Tab=createBottomTabNavigator();
+function Tabs(){const {t,c}=useTheme();return <Tab.Navigator screenOptions={({route})=>({tabBarActiveTintColor:c.primary,tabBarIcon:({color,size})=><Ionicons name={{workout:'barbell-outline',history:'calendar-outline',exercises:'fitness-outline',stats:'stats-chart-outline'}[route.name]} size={size} color={color}/>})}>{[["workout",HomeScreen],["history",HistoryScreen],["exercises",ExercisesScreen],["stats",StatsScreen]].map(([key,component])=><Tab.Screen key={key} name={key} component={component} options={{title:t(key)}}/>)}</Tab.Navigator>;}
+export default function RootNavigator(){const {t,c,dark}=useTheme();const base=dark?DarkTheme:DefaultTheme;return <NavigationContainer theme={{...base,colors:{...base.colors,primary:c.primary,background:c.background,card:c.surface,text:c.text}}}><Stack.Navigator><Stack.Screen name="Tabs" component={Tabs} options={{headerShown:false}}/>{[
+ ['ExerciseForm',ExerciseFormScreen,'editExercise'],['ExerciseDetail',ExerciseDetailScreen,'detail'],['ActiveWorkout',ActiveWorkoutScreen,'activeWorkout'],['ExercisePicker',ExercisePickerScreen,'addExercises'],['WorkoutSummary',WorkoutSummaryScreen,'workoutComplete'],['TemplateEditor',TemplateEditorScreen,'editTemplate'],['WorkoutDetail',WorkoutDetailScreen,'history'],['ExerciseProgress',ExerciseProgressScreen,'exerciseProgress']
+ ].map(([name,component,title])=><Stack.Screen key={name} name={name} component={component} options={{title:t(title)}}/>)}</Stack.Navigator></NavigationContainer>;}
