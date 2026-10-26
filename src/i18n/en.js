@@ -73,5 +73,12 @@ export default {
   "assisted_bodyweight": "Assisted bodyweight",
   "reps_only": "Repetitions",
   "duration": "Duration (seconds)",
-  "distance_duration": "Distance & duration"
+  "distance_duration": "Distance & duration",
+  "youtubeLink": "YouTube link (optional)",
+  "invalidYouTube": "Enter a valid YouTube link or remove it.",
+  "paste": "Paste",
+  "playVideo": "Play video",
+  "openYouTube": "Open in YouTube",
+  "videoNeedsInternet": "Video needs internet. If embedding is blocked, open YouTube.",
+  "preview": "Preview"
 };

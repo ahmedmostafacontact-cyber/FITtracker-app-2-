@@ -2,6 +2,7 @@ import React,{useState} from 'react';
 import {Pressable,Modal,Alert} from 'react-native';
 import {Image} from 'expo-image';
 import {Page,Label,Button,Card} from '../components/UI';
+import YouTubeEmbed from '../components/YouTubeEmbed';
 import {ExerciseImage} from '../components/ExerciseCard';
 import {useTheme} from '../theme/ThemeProvider';
 import {useData} from '../store/dataStore';
@@ -14,6 +15,7 @@ export default function ExerciseDetailScreen({navigation,route}){
  return <Page><Pressable onPress={()=>e.image_uri&&setZoom(true)}>{e.image_uri?<Image source={{uri:e.image_uri}} style={{width:'100%',aspectRatio:4/3,borderRadius:16}} contentFit="cover"/>:<ExerciseImage exercise={e} size={112}/>}</Pressable>
  <Label style={{fontSize:26,fontWeight:'700'}}>{settings.language==='ar'?(e.name_ar||e.name):e.name}</Label><Label muted>{t(e.primary_muscle)} · {t(e.equipment)} · {t(e.tracking_type)}</Label>
  <Card><Label>{e.instructions||t('noInstructions')}</Label></Card>
+ {!!e.youtube_id&&<YouTubeEmbed videoId={e.youtube_id} start={e.youtube_start||0}/>}
  <Button title={t('editExercise')} onPress={()=>navigation.navigate('ExerciseForm',{id:e.id})}/>
  {!!e.is_custom&&<Button secondary title={t('delete')} onPress={remove}/>}
  <Modal visible={zoom} onRequestClose={()=>setZoom(false)}><Page><Image source={{uri:e.image_uri}} style={{width:'100%',height:500}} contentFit="contain"/><Button title={t('close')} onPress={()=>setZoom(false)}/></Page></Modal></Page>;

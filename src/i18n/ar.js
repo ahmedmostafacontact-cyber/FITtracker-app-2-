@@ -73,5 +73,12 @@ export default {
   "assisted_bodyweight": "وزن جسم بمساعدة",
   "reps_only": "تكرارات فقط",
   "duration": "المدة (ثوانٍ)",
-  "distance_duration": "مسافة ومدة"
+  "distance_duration": "مسافة ومدة",
+  "youtubeLink": "رابط يوتيوب (اختياري)",
+  "invalidYouTube": "أدخل رابط يوتيوب صحيحاً أو امسح الرابط.",
+  "paste": "لصق",
+  "playVideo": "تشغيل الفيديو",
+  "openYouTube": "افتح في يوتيوب",
+  "videoNeedsInternet": "الفيديو يحتاج إنترنت. إذا تعذر التضمين، افتحه في يوتيوب.",
+  "preview": "معاينة"
 };
