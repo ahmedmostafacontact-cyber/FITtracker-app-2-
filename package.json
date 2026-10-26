@@ -43,5 +43,27 @@
   "private": true,
   "jest": {
     "preset": "jest-expo"
+  },
+  "expo": {
+    "autolinking": {
+      "android": {
+        "buildFromSource": [
+          ".*"
+        ],
+        "exclude": [
+          "expo-image",
+          "expo-image-picker",
+          "expo-image-manipulator",
+          "expo-sqlite",
+          "expo-notifications",
+          "expo-sharing",
+          "expo-linear-gradient",
+          "expo-haptics",
+          "expo-keep-awake",
+          "expo-image-loader",
+          "expo-status-bar"
+        ]
+      }
+    }
   }
 }
