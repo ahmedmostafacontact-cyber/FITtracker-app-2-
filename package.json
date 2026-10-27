@@ -1,6 +1,6 @@
 {
   "name": "fitlog",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "main": "index.js",
   "dependencies": {
     "@expo-google-fonts/cairo": "^0.4.2",
@@ -22,6 +22,7 @@
     "expo-linear-gradient": "~58.0.3",
     "expo-notifications": "~58.1.6",
     "expo-sharing": "~58.0.20",
+    "expo-splash-screen": "~58.0.11",
     "expo-sqlite": "~58.0.14",
     "expo-status-bar": "~58.0.4",
     "jest": "^30.5.2",

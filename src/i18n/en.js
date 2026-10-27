@@ -219,5 +219,8 @@ export default {
   "pastDate": "Date (YYYY-MM-DD)",
   "pastDuration": "Duration in minutes",
   "invalidPastDate": "Enter a real past date and a duration of 1–1440 minutes, ending before now.",
-  "weekdays": "Week days"
+  "weekdays": "Week days",
+  "zoomIn": "Zoom in",
+  "zoomOut": "Zoom out",
+  "recentSessions": "Recent sessions"
 };

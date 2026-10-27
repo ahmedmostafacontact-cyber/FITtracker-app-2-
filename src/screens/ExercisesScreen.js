@@ -2,13 +2,13 @@ import {spacing} from '../theme/tokens';
 import React,{useState} from 'react';
 import {View,FlatList,ScrollView} from 'react-native';
 import {useTheme} from '../theme/ThemeProvider';
-import {useData} from '../store/dataStore';
+import {useScreenData} from '../store/useScreenData';
 import {listExercises,toggleFavorite} from '../db/queries/exercises';
 import {muscles,equipment} from '../data/seedExercises';
 import {Label,Button,Input} from '../components/UI';
 import ExerciseCard from '../components/ExerciseCard';
 export default function ExercisesScreen({navigation,route}){
- useData(s=>s.revision);const {t,c}=useTheme();
+ useScreenData();const {t,c}=useTheme();
  const [search,setSearch]=useState(''),[muscle,setMuscle]=useState(''),[gear,setGear]=useState(''),[favorites,setFavorites]=useState(false);
  const rows=listExercises({search,muscle,equipment:gear,favorites});
  return <View style={{flex:1,backgroundColor:c.background,padding:spacing.md}}>

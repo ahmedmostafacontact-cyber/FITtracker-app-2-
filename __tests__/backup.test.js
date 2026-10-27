@@ -7,7 +7,7 @@ jest.mock('../src/services/notificationService',()=>({stopRest:jest.fn(()=>Promi
 import {validateBackup,sanitizeSettings,toCSV} from '../src/utils/backup';
 import {initializeDB,db} from '../src/db/database';
 import {createExercise,getExercise} from '../src/db/queries/exercises';
-import {createBackup,restoreBackup} from '../src/services/backupService';
+import {createBackup,restoreBackup,replaceTables,allTables} from '../src/services/backupService';
 import {resetAllData} from '../src/services/resetService';
 import * as FS from 'expo-file-system/legacy';
 beforeAll(()=>initializeDB());
@@ -21,3 +21,5 @@ test('backup -> reset -> restore preserves all rows, images and YouTube fields',
 });
 test('backup rejects schema changes and settings are constrained',()=>{expect(()=>validateBackup({format:'fitlog',version:99})).toThrow();expect(sanitizeSettings({unit:'bad',rest:-1,sound:'yes',theme:'dark'})).toMatchObject({unit:'kg',rest:90,sound:true,theme:'dark'});});
 test('CSV escapes quotes/newlines and spreadsheet formulas',()=>{const csv=toCSV([{name:'a,"b\nc',value:'=SUM(A1)'}],['name','value']);expect(csv).toContain('"a,""b\nc"');expect(csv).toContain("'=SUM(A1)");});
+
+test('failed database replacement rolls back existing data',()=>{const before=allTables();const invalid=JSON.parse(JSON.stringify(before));invalid.template_exercises.push({id:'orphan',template_id:'missing',exercise_id:'missing',order_index:0});expect(()=>replaceTables(invalid)).toThrow();expect(allTables()).toEqual(before);});

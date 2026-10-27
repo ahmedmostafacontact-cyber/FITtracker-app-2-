@@ -37,8 +37,8 @@ export function updateSet(id,patch){return mutate(()=>{
  if(keys.length)db().runSync('UPDATE workout_sets SET '+keys.map(k=>k+'=?').join(',')+', completed_at=? WHERE id=?',...keys.map(k=>patch[k]),patch.is_completed===1?Date.now():(patch.is_completed===0?null:s.completed_at),id);
  return s.is_completed||next.is_completed?rebuildRecords(s.exercise_id).get(id)||[]:[];
 });}
-export const deleteSet=id=>mutate(()=>{const set=db().getFirstSync('SELECT * FROM workout_sets WHERE id=?',id);db().runSync('DELETE FROM workout_sets WHERE id=?',id);rebuildRecords();return set;});
-export const restoreSet=set=>mutate(()=>{const id=insertSet(set.workout_exercise_id,set);rebuildRecords();return id;});
+export const deleteSet=id=>mutate(()=>{const set=db().getFirstSync('SELECT * FROM workout_sets WHERE id=?',id);db().runSync('DELETE FROM workout_sets WHERE id=?',id);db().runSync('UPDATE workout_sets SET set_number=set_number-1 WHERE workout_exercise_id=? AND set_number>?',set.workout_exercise_id,set.set_number);rebuildRecords();return set;});
+export const restoreSet=set=>mutate(()=>{const count=db().getFirstSync('SELECT COUNT(*) AS n FROM workout_sets WHERE workout_exercise_id=?',set.workout_exercise_id).n;const number=Math.min(set.set_number,count+1);db().runSync('UPDATE workout_sets SET set_number=set_number+1 WHERE workout_exercise_id=? AND set_number>=?',set.workout_exercise_id,number);const id=insertSet(set.workout_exercise_id,{...set,set_number:number});rebuildRecords();return id;});
 export const updateWorkout=(id,patch)=>mutate(()=>{
  const keys=['name','notes','start_time'].filter(k=>patch[k]!==undefined);
  if(keys.length)db().runSync('UPDATE workouts SET '+keys.map(k=>k+'=?').join(',')+' WHERE id=?',...keys.map(k=>patch[k]),id);

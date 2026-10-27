@@ -3,6 +3,7 @@ import React,{useState,useEffect,useRef} from 'react';
 import {Alert,Pressable,View} from 'react-native';
 import {Image} from 'expo-image';
 import * as Clipboard from 'expo-clipboard';
+import {normalizeDigits} from '../utils/calc';
 import {parseYouTubeUrl,youtubeThumbnail} from '../utils/youtube';
 import YouTubeEmbed from '../components/YouTubeEmbed';
 import Sheet from '../components/Sheet';
@@ -26,7 +27,7 @@ export default function ExerciseFormScreen({navigation,route}){
  if(!form.name.trim()||!muscles.includes(form.primary_muscle)){Alert.alert(t('error'),t('nameRequired'));return;}
  if(invalid){Alert.alert(t('error'),t('invalidYouTube'));return;}
  setSaving(true);
- try{const values={...form,youtube_id:parsed?.id||null,youtube_start:parsed?.start||0,name:form.name.trim(),rest_seconds:form.rest_seconds?Math.max(1,Number(form.rest_seconds)||90):null};
+ try{const values={...form,youtube_id:parsed?.id||null,youtube_start:parsed?.start||0,name:form.name.trim(),rest_seconds:form.rest_seconds?Math.min(3600,Math.max(1,Number(normalizeDigits(form.rest_seconds))||90)):null};
  const id=original?(updateExercise(original.id,values),original.id):createExercise(values);
  pending.current=null;
  if(original?.image_uri&&original.image_uri!==form.image_uri)await deleteExerciseImage(original.image_uri);

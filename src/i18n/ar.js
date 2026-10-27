@@ -219,5 +219,8 @@ export default {
   "pastDate": "التاريخ (YYYY-MM-DD)",
   "pastDuration": "المدة بالدقائق",
   "invalidPastDate": "أدخل تاريخاً سابقاً صحيحاً ومدة من 1 إلى 1440 دقيقة تنتهي قبل الوقت الحالي.",
-  "weekdays": "أيام الأسبوع"
+  "weekdays": "أيام الأسبوع",
+  "zoomIn": "تكبير",
+  "zoomOut": "تصغير",
+  "recentSessions": "الجلسات الأخيرة"
 };

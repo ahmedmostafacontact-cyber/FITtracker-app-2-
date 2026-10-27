@@ -5,11 +5,11 @@ import {Page,Label,Button,Card,Input} from '../components/UI';
 import {normalizeDigits} from '../utils/calc';
 import {parsePastDate,dayKey} from '../utils/date';
 import {useTheme} from '../theme/ThemeProvider';
-import {useData} from '../store/dataStore';
+import {useScreenData} from '../store/useScreenData';
 import {activeWorkout,startWorkout,startPastWorkout} from '../db/queries/workouts';
 import {listTemplates,startFromTemplate,copyTemplate,moveTemplate,deleteTemplate} from '../db/queries/templates';
 export default function HomeScreen({navigation}){
- useData(s=>s.revision);const {t}=useTheme();const active=activeWorkout();
+ useScreenData();const {t}=useTheme();const active=activeWorkout();
  const [past,setPast]=useState(false),[date,setDate]=useState(dayKey(Date.now()-86400000)),[minutes,setMinutes]=useState('60');
  function safe(fn){try{fn();}catch{Alert.alert(t('error'),t('saveError'));}}
  function addPast(){const parsed=parsePastDate(date,Number(minutes));if(!parsed){Alert.alert(t('error'),t('invalidPastDate'));return;}safe(()=>{const id=startPastWorkout(t('newWorkout'),parsed.start,parsed.end);setPast(false);navigation.navigate('ActiveWorkout',{id});});}

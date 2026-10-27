@@ -12,7 +12,7 @@ export function rebuildRecords(exerciseId){
 }
 export function workoutRecords(id){return db().getAllSync('SELECT p.*,e.name,e.name_ar FROM personal_records p JOIN exercises e ON e.id=p.exercise_id WHERE workout_id=? ORDER BY achieved_at',id);}
 export function dashboard(firstDay=1){
- const workouts=db().getAllSync('SELECT * FROM workouts WHERE is_completed=1');
+ const workouts=db().getAllSync("SELECT w.* FROM workouts w WHERE w.is_completed=1 AND EXISTS(SELECT 1 FROM workout_exercises we JOIN workout_sets s ON s.workout_exercise_id=we.id WHERE we.workout_id=w.id AND s.is_completed=1 AND s.type<>'warmup')");
  const sets=db().getAllSync("SELECT s.*,e.primary_muscle,we.exercise_id FROM workout_sets s JOIN workout_exercises we ON we.id=s.workout_exercise_id JOIN workouts w ON w.id=we.workout_id JOIN exercises e ON e.id=we.exercise_id WHERE w.is_completed=1 AND s.is_completed=1 AND s.type<>'warmup'");
  const muscles={};for(const s of sets)muscles[s.primary_muscle]=(muscles[s.primary_muscle]||0)+1;
  return {count:workouts.length,weekly:workouts.filter(w=>w.start_time>=weekStart(Date.now(),firstDay)&&w.start_time<=Date.now()).length,volume:sets.reduce((n,s)=>n+setVolume(s),0),duration:workouts.reduce((n,w)=>n+Math.max(0,w.end_time-w.start_time),0)/1000,streak:workoutStreak(workouts.map(w=>w.start_time)),muscles};
