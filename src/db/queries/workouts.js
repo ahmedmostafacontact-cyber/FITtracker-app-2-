@@ -57,7 +57,7 @@ export function moveEntry(id,offset){return mutate(()=>{
  [rows[index],rows[target]]=[rows[target],rows[index]];
  rows.forEach((row,i)=>db().runSync('UPDATE workout_exercises SET order_index=? WHERE id=?',i,row.id));
 });}
-export const replaceEntry=(id,exerciseId)=>mutate(()=>{db().runSync('UPDATE workout_exercises SET exercise_id=? WHERE id=?',exerciseId,id);db().runSync('DELETE FROM workout_sets WHERE workout_exercise_id=?',id);insertSet(id);rebuildRecords();});
+export const replaceEntry=(id,exerciseId)=>mutate(()=>{const replacement=db().getFirstSync('SELECT notes FROM exercises WHERE id=?',exerciseId);if(!replacement)throw new Error('Exercise missing');db().runSync('UPDATE workout_exercises SET exercise_id=?,notes=?,rest_seconds=NULL WHERE id=?',exerciseId,replacement.notes||'',id);db().runSync('DELETE FROM workout_sets WHERE workout_exercise_id=?',id);insertSet(id);rebuildRecords();});
 export function finishWorkout(id){return mutate(()=>{
  const workout=getWorkout(id);
  if(!workout||workout.is_completed)throw new Error('Workout missing');
