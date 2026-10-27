@@ -2,9 +2,9 @@ import {db} from '../database';
 import {uuid} from '../../utils/uuid';
 import {estimate1RM,setVolume} from '../../utils/calc';
 import {weekStart,workoutStreak} from '../../utils/date';
-export function rebuildRecords(){
- const sets=db().getAllSync("SELECT s.*,we.exercise_id,we.workout_id,w.start_time FROM workout_sets s JOIN workout_exercises we ON we.id=s.workout_exercise_id JOIN workouts w ON w.id=we.workout_id WHERE s.is_completed=1 AND s.type<>'warmup' ORDER BY w.start_time,s.completed_at,s.id");
- db().runSync('DELETE FROM personal_records');const maxima=new Map(),bySet=new Map();
+export function rebuildRecords(exerciseId){
+ const sets=db().getAllSync("SELECT s.*,we.exercise_id,we.workout_id,w.start_time FROM workout_sets s JOIN workout_exercises we ON we.id=s.workout_exercise_id JOIN workouts w ON w.id=we.workout_id WHERE s.is_completed=1 AND s.type<>'warmup' "+(exerciseId?" AND we.exercise_id=? ":"")+" ORDER BY w.start_time,s.completed_at,s.id",...(exerciseId?[exerciseId]:[]));
+ if(exerciseId)db().runSync('DELETE FROM personal_records WHERE exercise_id=?',exerciseId);else db().runSync('DELETE FROM personal_records');const maxima=new Map(),bySet=new Map();
  for(const s of sets){const old=maxima.get(s.exercise_id)||{};const values={max_weight:s.weight||0,max_reps:s.reps||0,max_1rm:estimate1RM(s.weight,s.reps)||0,max_set_volume:setVolume(s)};const types=[];
  for(const [type,value] of Object.entries(values)){if(value>(old[type]||0)){types.push(type);old[type]=value;db().runSync('INSERT INTO personal_records (id,exercise_id,type,value,workout_id,achieved_at) VALUES (?,?,?,?,?,?)',uuid(),s.exercise_id,type,value,s.workout_id,s.completed_at||s.start_time);}}
  maxima.set(s.exercise_id,old);bySet.set(s.id,types);

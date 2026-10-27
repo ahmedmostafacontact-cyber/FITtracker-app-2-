@@ -21,9 +21,9 @@ export function startFromTemplate(id){
  const workoutId=startWorkout(template.name);
  try{return mutate(()=>{
  db().runSync('UPDATE workouts SET template_id=?,notes=? WHERE id=?',id,template.notes||'',workoutId);
- for(const e of template.exercises)insertExercise(workoutId,e.exercise_id,e.sets.length?e.sets:[{}]);return workoutId;
+ for(const e of template.exercises){const entry=insertExercise(workoutId,e.exercise_id,e.sets.length?e.sets:[{}]);db().runSync('UPDATE workout_exercises SET superset_group=? WHERE id=?',e.superset_group??null,entry);}return workoutId;
  });}catch(error){db().runSync('DELETE FROM workouts WHERE id=?',workoutId);throw error;}
 }
 export function templateFromWorkout(id,name,templateId){const w=getWorkout(id);return saveTemplate({id:templateId,name:name||w.name,notes:w.notes,exercises:w.exercises});}
-export function templateDiffers(workout){const t=getTemplate(workout.template_id||'');if(!t)return false;const normalize=e=>({id:e.exercise_id,sets:e.sets.map(s=>[s.type||'normal',s.weight??null,s.reps??null,s.duration_sec??null,s.distance??null])});return JSON.stringify(t.exercises.map(normalize))!==JSON.stringify(workout.exercises.map(normalize));}
+export function templateDiffers(workout){const t=getTemplate(workout.template_id||'');if(!t)return false;const normalize=e=>({id:e.exercise_id,group:e.superset_group??null,sets:e.sets.map(s=>[s.type||'normal',s.weight??null,s.reps??null,s.duration_sec??null,s.distance??null])});return JSON.stringify(t.exercises.map(normalize))!==JSON.stringify(workout.exercises.map(normalize));}
 export function repeatWorkout(id){const old=getWorkout(id);const active=activeWorkout();if(active)return active.id;const next=startWorkout(old.name);mutate(()=>{for(const e of old.exercises)insertExercise(next,e.exercise_id,e.sets.map(s=>({...s,id:undefined,is_completed:0,completed_at:null})));});return next;}

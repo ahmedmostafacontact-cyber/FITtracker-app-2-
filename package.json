@@ -38,8 +38,9 @@
   },
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "test": "jest --runInBand"
+    "android": "expo run:android",
+    "test": "jest --runInBand",
+    "check": "node scripts/check-source.js"
   },
   "private": true,
   "jest": {

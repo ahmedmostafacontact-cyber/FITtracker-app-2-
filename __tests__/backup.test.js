@@ -1,0 +1,23 @@
+jest.mock('expo-sqlite',()=>({openDatabaseSync:()=>{const {DatabaseSync}=jest.requireActual('node:sqlite');const s=new DatabaseSync(':memory:');return {execSync:q=>s.exec(q),runSync:(q,...p)=>s.prepare(q).run(...p),getFirstSync:(q,...p)=>s.prepare(q).get(...p),getAllSync:(q,...p)=>s.prepare(q).all(...p),withTransactionSync:fn=>{s.exec('BEGIN');try{fn();s.exec('COMMIT');}catch(e){s.exec('ROLLBACK');throw e;}},closeSync:()=>s.close()};}}));
+jest.mock('expo-file-system/legacy',()=>({cacheDirectory:'cache/',documentDirectory:'file:///app/',EncodingType:{Base64:'base64'},readAsStringAsync:jest.fn(),writeAsStringAsync:jest.fn(),makeDirectoryAsync:jest.fn()}));
+jest.mock('expo-file-system',()=>({File:{pickFileAsync:jest.fn()}}));
+jest.mock('expo-sharing',()=>({isAvailableAsync:jest.fn(()=>Promise.resolve(true)),shareAsync:jest.fn()}));
+jest.mock('../src/services/imageService',()=>({imageDirectory:'file:///app/exercise-images/',deleteExerciseImage:jest.fn(()=>Promise.resolve())}));
+jest.mock('../src/services/notificationService',()=>({stopRest:jest.fn(()=>Promise.resolve())}));
+import {validateBackup,sanitizeSettings,toCSV} from '../src/utils/backup';
+import {initializeDB,db} from '../src/db/database';
+import {createExercise,getExercise} from '../src/db/queries/exercises';
+import {createBackup,restoreBackup} from '../src/services/backupService';
+import {resetAllData} from '../src/services/resetService';
+import * as FS from 'expo-file-system/legacy';
+beforeAll(()=>initializeDB());
+test('backup -> reset -> restore preserves all rows, images and YouTube fields',async()=>{
+ const id=createExercise({name:'Media test',primary_muscle:'chest',image_uri:'file:///app/exercise-images/old.jpg',youtube_id:'dQw4w9WgXcQ',youtube_start:90});
+ const files={};FS.readAsStringAsync.mockResolvedValue('/9j/2Q==');FS.writeAsStringAsync.mockImplementation(async(uri,text)=>{files[uri]=text;});
+ const path=await createBackup({unit:'lb',language:'ar'});const saved=JSON.parse(files[path]);expect(saved.images[id]).toBe('/9j/2Q==');validateBackup(saved);
+ await resetAllData();expect(getExercise(id)).toBeUndefined();await restoreBackup(saved);const e=getExercise(id);expect(e.youtube_start).toBe(90);expect(e.youtube_id).toBe('dQw4w9WgXcQ');expect(e.image_uri).not.toBe('file:///app/exercise-images/old.jpg');expect(files[e.image_uri]).toBe('/9j/2Q==');expect(db().getAllSync('SELECT * FROM exercises')).toHaveLength(53);
+ const broken=JSON.parse(JSON.stringify(saved));broken.tables.exercises[0].unexpected='injection';expect(()=>validateBackup(broken)).toThrow();expect(db().getAllSync('SELECT * FROM exercises')).toHaveLength(53);
+ const badImage=JSON.parse(JSON.stringify(saved));badImage.tables.exercises.find(x=>x.id===id).image_uri='file:///outside';expect(()=>validateBackup(badImage)).toThrow();
+});
+test('backup rejects schema changes and settings are constrained',()=>{expect(()=>validateBackup({format:'fitlog',version:99})).toThrow();expect(sanitizeSettings({unit:'bad',rest:-1,sound:'yes',theme:'dark'})).toMatchObject({unit:'kg',rest:90,sound:true,theme:'dark'});});
+test('CSV escapes quotes/newlines and spreadsheet formulas',()=>{const csv=toCSV([{name:'a,"b\nc',value:'=SUM(A1)'}],['name','value']);expect(csv).toContain('"a,""b\nc"');expect(csv).toContain("'=SUM(A1)");});

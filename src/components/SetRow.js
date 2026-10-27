@@ -1,3 +1,4 @@
+import {spacing,radii} from '../theme/tokens';
 import React from 'react';
 import {View,Pressable,PanResponder} from 'react-native';
 import {Label} from './UI';
@@ -14,6 +15,6 @@ export default function SetRow({set,index,tracking,previous,onChange,onDelete}){
  {weighted&&<NumberInput label={t(settings.unit)} value={set.weight==null?null:(settings.unit==='lb'?Math.round(kgToLb(set.weight)*100)/100:set.weight)} onChange={weight=>onChange({weight:weight==null?null:settings.unit==='lb'?lbToKg(weight):weight})} step={2.5}/>}
  {tracking==='distance_duration'&&<NumberInput label={t('distanceKm')} value={set.distance} onChange={distance=>onChange({distance})} step={0.1}/>}
  <NumberInput label={t(timed?'seconds':'reps')} integer value={timed?set.duration_sec:set.reps} onChange={value=>onChange(timed?{duration_sec:value}:{reps:value})}/>
- <Pressable accessibilityLabel={t(set.is_completed?'uncompleteSet':'completeSet')} onPress={()=>onChange({is_completed:set.is_completed?0:1})} style={{minHeight:48,width:48,justifyContent:'center',alignSelf:'center',borderRadius:12,backgroundColor:set.is_completed?c.success:c.surfaceAlt}}><Label style={{textAlign:'center'}}>✓</Label></Pressable>
- </View><View style={{flexDirection:'row',justifyContent:'space-between'}}><Label muted style={{fontSize:12}}>{t(set.type)}</Label><Pressable onPress={onDelete} style={{minHeight:48,padding:8}}><Label style={{fontSize:12,color:c.danger}}>{t('deleteSet')}</Label></Pressable></View></View>;
+ <Pressable accessibilityLabel={t(set.is_completed?'uncompleteSet':'completeSet')} onPress={()=>onChange({is_completed:set.is_completed?0:1})} style={{minHeight:48,width:48,justifyContent:'center',alignSelf:'center',borderRadius:radii.control,backgroundColor:set.is_completed?c.success:c.surfaceAlt}}><Label style={{textAlign:'center'}}>✓</Label></Pressable>
+ </View><View style={{flexDirection:'row',justifyContent:'space-between'}}><Label muted style={{fontSize:12}}>{t(set.type)}</Label><Pressable onPress={onDelete} style={{minHeight:48,padding:spacing.sm}}><Label style={{fontSize:12,color:c.danger}}>{t('deleteSet')}</Label></Pressable></View></View>;
 }

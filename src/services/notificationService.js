@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AppState} from 'react-native';
 import {useWorkoutStore} from '../store/workoutStore';
 Notifications.setNotificationHandler({handleNotification:async()=>({shouldShowBanner:true,shouldShowList:true,shouldPlaySound:true,shouldSetBadge:false})});
-let queue=Promise.resolve();
+let queue=Promise.resolve(),permissionAsked=false;
 export function queueRest(task){const job=queue.then(task);queue=job.catch(()=>{});return job;}
 export async function restoreRest(workoutId){
  const raw=await AsyncStorage.getItem('restTimer');if(!raw)return;
@@ -19,7 +19,7 @@ export function startRest(seconds,workoutId,settings,t){return queueRest(async()
  const restEnd=Date.now()+Math.max(1,seconds)*1000;let notificationId=null,notificationsAvailable=true;
  try{
  let permission=await Notifications.getPermissionsAsync();
- if(!permission.granted)permission=await Notifications.requestPermissionsAsync();
+ if(!permission.granted&&!permissionAsked){permissionAsked=true;permission=await Notifications.requestPermissionsAsync();}
  if(permission.granted){
  const channelId=`fitlog-rest-${+settings.sound}-${+settings.haptics}`;
  await Notifications.setNotificationChannelAsync(channelId,{name:t('restTimer'),importance:Notifications.AndroidImportance.HIGH,sound:settings.sound?'default':null,enableVibrate:settings.haptics});
@@ -28,6 +28,9 @@ export function startRest(seconds,workoutId,settings,t){return queueRest(async()
  }catch{notificationsAvailable=false;}
  await save({restEnd,notificationId,workoutId});return notificationsAvailable;
 });}
-export async function finishRest(settings){
- await stopRest();if(settings.haptics&&AppState.currentState==='active')await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(()=>{});
-}
+export const finishRest=(settings,expectedEnd)=>queueRest(async()=>{
+ const state=useWorkoutStore.getState();if(expectedEnd!=null&&state.restEnd!==expectedEnd)return;
+ if(state.notificationId)await Notifications.cancelScheduledNotificationAsync(state.notificationId);
+ await save({restEnd:null,notificationId:null,workoutId:null});
+ if(settings.haptics&&AppState.currentState==='active')await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(()=>{});
+});
