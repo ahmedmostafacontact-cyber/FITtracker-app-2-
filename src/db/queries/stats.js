@@ -20,6 +20,6 @@ export function dashboard(firstDay=1){
 export function exerciseProgress(exerciseId,metric,range){
  const since=range==='all'?0:Date.now()-Number(range)*86400000;
  const sets=db().getAllSync("SELECT s.*, w.id AS workout_id,w.start_time FROM workout_sets s JOIN workout_exercises we ON we.id=s.workout_exercise_id JOIN workouts w ON w.id=we.workout_id WHERE we.exercise_id=? AND w.is_completed=1 AND s.is_completed=1 AND s.type<>'warmup' AND w.start_time>=? ORDER BY w.start_time",exerciseId,since);
- const groups=new Map();for(const s of sets){let g=groups.get(s.workout_id);if(!g){g={time:s.start_time,value:0};groups.set(s.workout_id,g);}const value=metric==='max_weight'?(s.weight||0):metric==='max_1rm'?(estimate1RM(s.weight,s.reps)||0):setVolume(s);g.value=metric==='volume'?g.value+value:Math.max(g.value,value);}
+ const groups=new Map();for(const s of sets){if(metric==='max_1rm'&&estimate1RM(s.weight,s.reps)===null)continue;let g=groups.get(s.workout_id);if(!g){g={time:s.start_time,value:0};groups.set(s.workout_id,g);}const value=metric==='max_weight'?(s.weight||0):metric==='max_1rm'?(estimate1RM(s.weight,s.reps)||0):setVolume(s);g.value=metric==='volume'?g.value+value:Math.max(g.value,value);}
  return [...groups.values()];
 }
