@@ -8,6 +8,6 @@ cd "$(dirname "$0")/.."
 export FITLOG_KEYSTORE_PATH FITLOG_KEYSTORE_PASSWORD_FILE
 android/gradlew -p android :app:assembleRelease --no-daemon \
  --max-workers="${FITLOG_BUILD_WORKERS:-4}" \
- -PreactNativeArchitectures="${FITLOG_ABIS:-arm64-v8a,x86_64}" \
+ -PreactNativeArchitectures="${FITLOG_ABIS:-armeabi-v7a,arm64-v8a,x86_64}" \
  -Pandroid.minSdkVersion=26 \
  '-Dorg.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m'

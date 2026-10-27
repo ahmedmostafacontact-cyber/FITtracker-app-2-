@@ -17,7 +17,7 @@ npx expo prebuild --platform android --no-install
 bash scripts/build-apk.sh
 ```
 
-الناتج: `android/app/build/outputs/apk/release/app-release.apk`. يتضمن ARM64 وx86_64، والحد الأدنى Android API 26. يمكن تغيير FITLOG_ABIS وFITLOG_BUILD_WORKERS عند الحاجة.
+الناتج: `android/app/build/outputs/apk/release/app-release.apk`. يتضمن ARM32 وARM64 وx86_64، والحد الأدنى Android API 26. يمكن تغيير FITLOG_ABIS وFITLOG_BUILD_WORKERS عند الحاجة.
 
 المفتاح الخاص المستخدم في هذه البيئة موجود خارج المستودع داخل `/workspace/fitlog-tools/signing/`. يجب الاحتفاظ بنسخة آمنة منه وكلمة مروره لإنتاج تحديثات بنفس التوقيع. **لا ترفع المفتاح أو كلمة المرور أو ملفات أسرار البيئة إلى GitHub أو تشاركها علناً.** التوقيع الجديد مختلف عن توقيع معاينة M0، لذلك يلزم حذف تلك المعاينة قبل تثبيت هذا الإصدار.
 
