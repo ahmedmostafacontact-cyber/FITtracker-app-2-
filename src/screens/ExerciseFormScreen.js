@@ -1,3 +1,4 @@
+import {imageSource} from '../data/exerciseMedia';
 import {radii} from '../theme/tokens';
 import React,{useState,useEffect,useRef} from 'react';
 import {Alert,Pressable,View} from 'react-native';
@@ -34,12 +35,13 @@ export default function ExerciseFormScreen({navigation,route}){
  navigation.replace('ExerciseDetail',{id});
  }catch{Alert.alert(t('error'),t('saveError'));}finally{setSaving(false);}
  }
- return <Page><Pressable accessibilityLabel={t('photo')} onPress={()=>setSheet(true)}><View style={{aspectRatio:4/3,borderRadius:radii.card,overflow:'hidden',backgroundColor:c.surfaceAlt,alignItems:'center',justifyContent:'center'}}>{form.image_uri?<Image source={{uri:form.image_uri}} style={{width:'100%',height:'100%'}} contentFit="cover"/>:<Label>{t('addPhoto')}</Label>}</View></Pressable>
+ return <Page><Pressable accessibilityLabel={t('photo')} onPress={()=>setSheet(true)}><View style={{aspectRatio:4/3,borderRadius:radii.card,overflow:'hidden',backgroundColor:c.surfaceAlt,alignItems:'center',justifyContent:'center'}}>{form.image_uri?<Image source={imageSource(form.image_uri)} style={{width:'100%',height:'100%'}} contentFit="contain"/>:<Label>{t('addPhoto')}</Label>}</View></Pressable>
  <Input label={t('name')} value={form.name} onChangeText={name=>patch({name})}/><Input label={t('arabicName')} value={form.name_ar||''} onChangeText={name_ar=>patch({name_ar})}/>
  <Label>{t('muscle')}</Label><Choices value={form.primary_muscle} onChange={primary_muscle=>patch({primary_muscle})} options={muscles}/>
  <Label>{t('equipment')}</Label><Choices value={form.equipment} onChange={equipment=>patch({equipment})} options={equipment}/>
  <Label>{t('trackingType')}</Label><Choices value={form.tracking_type} onChange={tracking_type=>patch({tracking_type})} options={tracking}/>
  <Input label={t('instructions')} multiline value={form.instructions||''} onChangeText={instructions=>patch({instructions})}/>
+ <Input label={t('exerciseNotes')} multiline value={form.notes||''} onChangeText={notes=>patch({notes})}/>
  <Input label={t('restSeconds')} keyboardType="number-pad" value={String(form.rest_seconds||'')} onChangeText={rest_seconds=>patch({rest_seconds})}/>
  <Input label={t('youtubeLink')} autoCapitalize="none" autoCorrect={false} value={url} onChangeText={setUrl}/><Button secondary title={t('paste')} onPress={()=>Clipboard.getStringAsync().then(setUrl).catch(()=>Alert.alert(t('error'),t('saveError')))}/>{!!invalid&&<Label style={{color:c.danger}}>{t('invalidYouTube')}</Label>}{parsed&&<Pressable onPress={()=>setVideo(true)}><Image source={{uri:youtubeThumbnail(parsed.id)}} style={{width:'100%',aspectRatio:16/9,borderRadius:radii.card}}/><Label>{t('playVideo')}</Label></Pressable>}<Sheet visible={video} onClose={()=>setVideo(false)} title={t('preview')}>{video&&parsed&&<YouTubeEmbed videoId={parsed.id} start={parsed.start}/>}</Sheet>
  <Button title={t('save')} disabled={saving||!!invalid} onPress={save}/>

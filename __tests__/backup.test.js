@@ -1,3 +1,4 @@
+jest.mock('expo-asset',()=>({Asset:{fromModule:()=>({localUri:'file:///asset.jpg',downloadAsync:async()=>{}})}}));
 jest.mock('expo-sqlite',()=>({openDatabaseSync:()=>{const {DatabaseSync}=jest.requireActual('node:sqlite');const s=new DatabaseSync(':memory:');return {execSync:q=>s.exec(q),runSync:(q,...p)=>s.prepare(q).run(...p),getFirstSync:(q,...p)=>s.prepare(q).get(...p),getAllSync:(q,...p)=>s.prepare(q).all(...p),withTransactionSync:fn=>{s.exec('BEGIN');try{fn();s.exec('COMMIT');}catch(e){s.exec('ROLLBACK');throw e;}},closeSync:()=>s.close()};}}));
 jest.mock('expo-file-system/legacy',()=>({cacheDirectory:'cache/',documentDirectory:'file:///app/',EncodingType:{Base64:'base64'},readAsStringAsync:jest.fn(),writeAsStringAsync:jest.fn(),makeDirectoryAsync:jest.fn()}));
 jest.mock('expo-file-system',()=>({File:{pickFileAsync:jest.fn()}}));
@@ -12,11 +13,12 @@ import {resetAllData} from '../src/services/resetService';
 import * as FS from 'expo-file-system/legacy';
 beforeAll(()=>initializeDB());
 test('backup -> reset -> restore preserves all rows, images and YouTube fields',async()=>{
+ const L=require('../src/db/queries/local');L.saveProfile('Ahmed',null);L.saveMeasurement({id:'body',kind:'bodyWeight',value:80,recorded_at:1000});
  const id=createExercise({name:'Media test',primary_muscle:'chest',image_uri:'file:///app/exercise-images/old.jpg',youtube_id:'dQw4w9WgXcQ',youtube_start:90});
  const files={};FS.readAsStringAsync.mockResolvedValue('/9j/2Q==');FS.writeAsStringAsync.mockImplementation(async(uri,text)=>{files[uri]=text;});
  const path=await createBackup({unit:'lb',language:'ar'});const saved=JSON.parse(files[path]);expect(saved.images[id]).toBe('/9j/2Q==');validateBackup(saved);
- await resetAllData();expect(getExercise(id)).toBeUndefined();await restoreBackup(saved);const e=getExercise(id);expect(e.youtube_start).toBe(90);expect(e.youtube_id).toBe('dQw4w9WgXcQ');expect(e.image_uri).not.toBe('file:///app/exercise-images/old.jpg');expect(files[e.image_uri]).toBe('/9j/2Q==');expect(db().getAllSync('SELECT * FROM exercises')).toHaveLength(53);
- const broken=JSON.parse(JSON.stringify(saved));broken.tables.exercises[0].unexpected='injection';expect(()=>validateBackup(broken)).toThrow();expect(db().getAllSync('SELECT * FROM exercises')).toHaveLength(53);
+ await resetAllData();expect(getExercise(id)).toBeUndefined();await restoreBackup(saved);expect(L.getProfile().name).toBe('Ahmed');expect(L.listMeasurements('bodyWeight')[0].value).toBe(80);const e=getExercise(id);expect(e.youtube_start).toBe(90);expect(e.youtube_id).toBe('dQw4w9WgXcQ');expect(e.image_uri).not.toBe('file:///app/exercise-images/old.jpg');expect(files[e.image_uri]).toBe('/9j/2Q==');expect(db().getAllSync('SELECT * FROM exercises')).toHaveLength(144);
+ const broken=JSON.parse(JSON.stringify(saved));broken.tables.exercises[0].unexpected='injection';expect(()=>validateBackup(broken)).toThrow();expect(db().getAllSync('SELECT * FROM exercises')).toHaveLength(144);
  const badImage=JSON.parse(JSON.stringify(saved));badImage.tables.exercises.find(x=>x.id===id).image_uri='file:///outside';expect(()=>validateBackup(badImage)).toThrow();
 });
 test('backup rejects schema changes and settings are constrained',()=>{expect(()=>validateBackup({format:'fitlog',version:99})).toThrow();expect(sanitizeSettings({unit:'bad',rest:-1,sound:'yes',theme:'dark'})).toMatchObject({unit:'kg',rest:90,sound:true,theme:'dark'});});

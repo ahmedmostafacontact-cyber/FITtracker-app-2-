@@ -4,7 +4,7 @@ export function listExercises({search='',muscle='',equipment='',includeArchived=
  const conditions=['(? = 1 OR is_archived = 0)','(? = ? OR primary_muscle = ?)','(? = ? OR equipment = ?)','(? = 0 OR is_favorite = 1)'];
  const args=[+includeArchived,muscle,'',muscle,equipment,'',equipment,+favorites];
  if(search.trim()){conditions.push('(name LIKE ? OR name_ar LIKE ?)');args.push('%'+search.trim()+'%','%'+search.trim()+'%');}
- return db().getAllSync('SELECT * FROM exercises WHERE '+conditions.join(' AND ')+' ORDER BY is_favorite DESC, name',...args);
+ return db().getAllSync('SELECT * FROM exercises WHERE '+conditions.join(' AND ')+" ORDER BY CASE WHEN id LIKE 'guide-%' THEN 0 ELSE 1 END, CASE WHEN id LIKE 'guide-%' THEN id ELSE name END",...args);
 }
 export const getExercise=id=>db().getFirstSync('SELECT * FROM exercises WHERE id=?',id);
 const fields=['name','name_ar','primary_muscle','equipment','tracking_type','instructions','image_uri','youtube_id','youtube_start','rest_seconds','notes'];

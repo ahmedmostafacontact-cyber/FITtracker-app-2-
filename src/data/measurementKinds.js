@@ -1,0 +1,1 @@
+export const measurementKinds=['bodyWeight','bodyFat','calories','neck','shoulderSize','chestSize','leftArm','rightArm','leftForearm','rightForearm','waist','hips','leftThigh','rightThigh','leftCalf','rightCalf'];

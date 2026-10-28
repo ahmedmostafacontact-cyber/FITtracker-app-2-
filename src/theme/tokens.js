@@ -1,7 +1,7 @@
-export const spacing = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 };
-export const radii = { card: 16, control: 12 };
-const shared = { success: '#22C55E', warning: '#F59E0B', danger: '#EF4444' };
-export const colors = {
- light: { ...shared, background:'#FFFFFF',surface:'#F5F6F8',surfaceAlt:'#ECEEF2',text:'#0F172A',textMuted:'#64748B',primary:'#3B5BFF' },
- dark: { ...shared, background:'#0B0D12',surface:'#161A22',surfaceAlt:'#1F2430',text:'#F1F5F9',textMuted:'#94A3B8',primary:'#6C8CFF' }
+export const spacing={xs:4,sm:8,md:16,lg:24,xl:32};
+export const radii={card:10,control:6};
+const shared={success:'#22C55E',successSurface:'#12351F',warning:'#F59E0B',danger:'#EF4444',primary:'#FF8A00',onPrimary:'#000000'};
+export const colors={
+ light:{...shared,successSurface:'#DCFCE7',background:'#FFFFFF',surface:'#FAFAFA',surfaceAlt:'#EEEEEE',border:'#B8B8B8',text:'#111111',textMuted:'#666666'},
+ dark:{...shared,background:'#000000',surface:'#121212',surfaceAlt:'#242424',border:'#454545',text:'#FFFFFF',textMuted:'#B3B3B3'}
 };

@@ -1,3 +1,4 @@
+import {measurementKinds} from '../data/measurementKinds';
 import {muscles,equipment,tracking} from '../data/seedExercises';
 import {validSet} from './calc';
 export const tableColumns={
@@ -7,9 +8,11 @@ export const tableColumns={
  workouts:['id','name','template_id','start_time','end_time','notes','is_completed'],
  workout_exercises:['id','workout_id','exercise_id','order_index','superset_group','rest_seconds','notes'],
  workout_sets:['id','workout_exercise_id','set_number','type','weight','reps','duration_sec','distance','is_completed','completed_at'],
+ measurements:['id','kind','value','recorded_at'],
+ profile:['id','name','image_uri'],
  personal_records:['id','exercise_id','type','value','workout_id','achieved_at']
 };
-export const defaultSettings={theme:'system',language:'ar',unit:'kg',rest:90,keepAwake:true,haptics:true,sound:true,weekStart:1};
+export const defaultSettings={theme:'dark',language:'ar',unit:'kg',rest:90,keepAwake:true,haptics:true,sound:true,weekStart:1};
 export function sanitizeSettings(input={}){
  const result={...defaultSettings};
  for(const [key,allowed] of Object.entries({theme:['light','dark','system'],language:['ar','en'],unit:['kg','lb'],weekStart:[0,1,6]}))if(allowed.includes(input[key]))result[key]=input[key];
@@ -19,7 +22,8 @@ export function sanitizeSettings(input={}){
 }
 export function validateBackup(data){
  const fail=()=>{throw new Error('backupInvalid');};
- if(!data||data.format!=='fitlog'||data.version!==1||!data.tables||!data.images||Array.isArray(data.images))fail();
+ if(!data||data.format!=='fitlog'||![1,2].includes(data.version)||!data.tables||!data.images||Array.isArray(data.images))fail();
+ if(data.version===1){data.tables.measurements ||= [];data.tables.profile ||= [];}
  const ids={};let total=0;
  for(const [table,columns] of Object.entries(tableColumns)){
  const rows=data.tables[table];if(!Array.isArray(rows)||rows.length>100000)fail();ids[table]=new Set();
@@ -31,6 +35,8 @@ export function validateBackup(data){
  }
  const reference=(row,key,table)=>{if(!ids[table].has(row[key]))fail();};
  for(const e of data.tables.exercises){if(typeof e.name!=='string'||!e.name.trim()||!muscles.includes(e.primary_muscle)||(e.equipment!=null&&!equipment.includes(e.equipment))||!tracking.includes(e.tracking_type))fail();if(e.youtube_start!=null&&(!Number.isInteger(e.youtube_start)||e.youtube_start<0))fail();if(e.youtube_id&&!/^[A-Za-z0-9_-]{11}$/.test(e.youtube_id))fail();if(e.image_uri){if(e.image_uri!=='image:'+e.id||typeof data.images[e.id]!=='string'||!/^\/9j\/[A-Za-z0-9+/\s]*={0,2}$/.test(data.images[e.id]))fail();total+=data.images[e.id].length;if(total>140000000)fail();}}
+ for(const m of data.tables.measurements)if(!measurementKinds.includes(m.kind)||!Number.isFinite(m.value)||m.value<=0||!Number.isInteger(m.recorded_at)||m.recorded_at<0)fail();
+ for(const p of data.tables.profile)if(p.id!=='local-profile'||typeof p.name!=='string'||p.name.length>100||p.image_uri&&(p.image_uri!=='image:'+p.id||typeof data.images[p.id]!=='string'||!/^\/9j\/[A-Za-z0-9+/\s]*={0,2}$/.test(data.images[p.id])))fail();
  for(const e of data.tables.template_exercises){reference(e,'template_id','templates');reference(e,'exercise_id','exercises');let sets;try{sets=JSON.parse(e.sets_json||'[]');}catch{fail();}if(!Array.isArray(sets)||sets.some(s=>!s||typeof s!=='object'||!['normal','warmup','drop','failure'].includes(s.type)||Object.keys(s).some(k=>!['type','weight','reps','duration_sec','distance'].includes(k))||['weight','reps','duration_sec','distance'].some(k=>s[k]!=null&&(!Number.isFinite(s[k])||s[k]<0))))fail();}
  for(const e of data.tables.workout_exercises){reference(e,'workout_id','workouts');reference(e,'exercise_id','exercises');}
  for(const s of data.tables.workout_sets){reference(s,'workout_exercise_id','workout_exercises');if(!Number.isInteger(s.set_number)||s.set_number<1||!['normal','warmup','drop','failure'].includes(s.type))fail();}
